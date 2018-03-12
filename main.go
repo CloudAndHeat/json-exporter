@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus"
 	"crypto/tls"
-	"github.com/oliveagle/jsonpath"
-	"io/ioutil"
 	"encoding/json"
+	"github.com/oliveagle/jsonpath"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"io/ioutil"
 )
 
 var addr = flag.String("listen-address", ":9116", "The address to listen on for HTTP requests.")
@@ -55,8 +55,8 @@ func probeHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	valueGauge := prometheus.NewGauge(
 		prometheus.GaugeOpts{
-			Name:	"value",
-			Help:	"Retrieved value",
+			Name: "value",
+			Help: "Retrieved value",
 		},
 	)
 	registry := prometheus.NewRegistry()
@@ -70,8 +70,9 @@ func probeHandler(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{Transport: tr}
 	resp, err := client.Get(target)
 	if err != nil {
-		log.Fatal(err)
-
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		return
 	} else {
 		defer resp.Body.Close()
 		bytes, err := ioutil.ReadAll(resp.Body)
